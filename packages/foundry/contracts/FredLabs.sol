@@ -6,23 +6,25 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
- * @title IdeaLabs
- * @notice Submit ideas (burn 615,000 CLAWD ≈ $50), stake on ideas (308,000 CLAWD ≈ $25), 
+ * @title FredLabs
+ * @notice Submit ideas (burn FRED as fee), stake on ideas, 
  *         admin can mark as built (with payout) or burn offensive content.
+ * @dev Rebranded from IdeaLabs for the $FRED token community
  */
-contract IdeaLabs is ReentrancyGuard {
+contract FredLabs is ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     // =============================================================
     //                           CONSTANTS
     // =============================================================
     
-    IERC20 public immutable clawdToken;
+    IERC20 public immutable fredToken;
     address public immutable admin;
     address public constant DEAD_ADDRESS = 0x000000000000000000000000000000000000dEaD;
     
-    uint256 public constant SUBMIT_COST = 615000 * 10**18;  // 615,000 CLAWD (~$50)
-    uint256 public constant STAKE_COST = 308000 * 10**18;  // 308,000 CLAWD (~$25)
+    // Costs in FRED (18 decimals) - these can be adjusted for FRED's price
+    uint256 public constant SUBMIT_COST = 1000000 * 10**18;  // 1M FRED to submit
+    uint256 public constant STAKE_COST = 500000 * 10**18;    // 500K FRED to stake
 
     // =============================================================
     //                           STORAGE
@@ -60,8 +62,8 @@ contract IdeaLabs is ReentrancyGuard {
     //                           CONSTRUCTOR
     // =============================================================
 
-    constructor(address _clawdToken, address _admin) {
-        clawdToken = IERC20(_clawdToken);
+    constructor(address _fredToken, address _admin) {
+        fredToken = IERC20(_fredToken);
         admin = _admin;
         nextIdeaId = 1;
     }
@@ -80,15 +82,15 @@ contract IdeaLabs is ReentrancyGuard {
     // =============================================================
 
     /**
-     * @notice Submit a new idea. Burns SUBMIT_COST CLAWD.
+     * @notice Submit a new idea. Burns SUBMIT_COST FRED.
      * @param _content The idea text content
      */
     function submitIdea(string calldata _content) external nonReentrant {
         require(bytes(_content).length > 0, "Content cannot be empty");
         require(bytes(_content).length <= 2000, "Content too long");
 
-        // Transfer CLAWD from user and burn it
-        clawdToken.safeTransferFrom(msg.sender, DEAD_ADDRESS, SUBMIT_COST);
+        // Transfer FRED from user and burn it
+        fredToken.safeTransferFrom(msg.sender, DEAD_ADDRESS, SUBMIT_COST);
 
         uint256 ideaId = nextIdeaId++;
         ideas[ideaId] = Idea({
@@ -107,7 +109,7 @@ contract IdeaLabs is ReentrancyGuard {
     }
 
     /**
-     * @notice Stake on an idea. Pays STAKE_COST CLAWD.
+     * @notice Stake on an idea. Pays STAKE_COST FRED.
      *         ONE stake per address per idea (no sybil stacking).
      * @param _ideaId The idea to stake on
      */
@@ -118,8 +120,8 @@ contract IdeaLabs is ReentrancyGuard {
         require(!idea.isBurned, "Idea was burned");
         require(!hasStaked[_ideaId][msg.sender], "Already staked on this idea");
 
-        // Transfer CLAWD from user to contract (held until built or burned)
-        clawdToken.safeTransferFrom(msg.sender, address(this), STAKE_COST);
+        // Transfer FRED from user to contract (held until built or burned)
+        fredToken.safeTransferFrom(msg.sender, address(this), STAKE_COST);
 
         hasStaked[_ideaId][msg.sender] = true;
         ideaStakers[_ideaId].push(msg.sender);
@@ -147,7 +149,7 @@ contract IdeaLabs is ReentrancyGuard {
         uint256 share = idea.payoutPool / idea.stakerCount;
         require(share > 0, "Share too small");
 
-        clawdToken.safeTransfer(msg.sender, share);
+        fredToken.safeTransfer(msg.sender, share);
 
         emit PayoutClaimed(_ideaId, msg.sender, share);
     }
@@ -158,9 +160,9 @@ contract IdeaLabs is ReentrancyGuard {
 
     /**
      * @notice Mark an idea as built and set the payout pool amount.
-     *         Admin must have transferred CLAWD to this contract first.
+     *         Admin must have transferred FRED to this contract first.
      * @param _ideaId The idea to mark as built
-     * @param _payoutAmount Total CLAWD to distribute to stakers
+     * @param _payoutAmount Total FRED to distribute to stakers
      */
     function markBuilt(uint256 _ideaId, uint256 _payoutAmount) external onlyAdmin nonReentrant {
         Idea storage idea = ideas[_ideaId];
@@ -168,11 +170,11 @@ contract IdeaLabs is ReentrancyGuard {
         require(!idea.isBuilt, "Already built");
         require(!idea.isBurned, "Idea was burned");
 
-        // If there's a payout, ensure contract has enough CLAWD
+        // If there's a payout, ensure contract has enough FRED
         if (_payoutAmount > 0 && idea.stakerCount > 0) {
             require(
-                clawdToken.balanceOf(address(this)) >= idea.totalStaked + _payoutAmount,
-                "Insufficient CLAWD for payout"
+                fredToken.balanceOf(address(this)) >= idea.totalStaked + _payoutAmount,
+                "Insufficient FRED for payout"
             );
         }
 
@@ -184,7 +186,7 @@ contract IdeaLabs is ReentrancyGuard {
 
     /**
      * @notice Burn an idea's stake pool (for offensive content).
-     *         Sends all staked CLAWD to the dead address.
+     *         Sends all staked FRED to the dead address.
      * @param _ideaId The idea to burn
      */
     function burnIdea(uint256 _ideaId) external onlyAdmin nonReentrant {
@@ -197,28 +199,27 @@ contract IdeaLabs is ReentrancyGuard {
         idea.isBurned = true;
 
         if (burnAmount > 0) {
-            clawdToken.safeTransfer(DEAD_ADDRESS, burnAmount);
+            fredToken.safeTransfer(DEAD_ADDRESS, burnAmount);
         }
 
         emit IdeaBurned(_ideaId, burnAmount);
     }
 
     /**
-     * @notice Deposit CLAWD into contract for payouts.
-     *         Admin must approve contract first.
-     * @param _amount Amount of CLAWD to deposit
+     * @notice Deposit FRED into contract for payouts.
+     *         Anyone can deposit, but typically admin does.
+     * @param _amount Amount of FRED to deposit
      */
-    function depositClawdForPayouts(uint256 _amount) external {
-        clawdToken.safeTransferFrom(msg.sender, address(this), _amount);
+    function depositFredForPayouts(uint256 _amount) external {
+        fredToken.safeTransferFrom(msg.sender, address(this), _amount);
     }
 
     /**
-     * @notice Withdraw excess CLAWD from contract (admin only).
-     *         Cannot withdraw staked amounts.
+     * @notice Withdraw excess FRED from contract (admin only).
      * @param _amount Amount to withdraw
      */
-    function withdrawExcessClawd(uint256 _amount) external onlyAdmin {
-        clawdToken.safeTransfer(admin, _amount);
+    function withdrawExcessFred(uint256 _amount) external onlyAdmin {
+        fredToken.safeTransfer(admin, _amount);
     }
 
     // =============================================================
@@ -269,9 +270,9 @@ contract IdeaLabs is ReentrancyGuard {
     }
 
     /**
-     * @notice Get contract's CLAWD balance
+     * @notice Get contract's FRED balance
      */
     function getContractBalance() external view returns (uint256) {
-        return clawdToken.balanceOf(address(this));
+        return fredToken.balanceOf(address(this));
     }
 }

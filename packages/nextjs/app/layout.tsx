@@ -19,19 +19,19 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://labs.clawdbotatg.eth.link"),
-  title: "$CLAWDlabs",
-  description: "Submit ideas, stake $CLAWD, and fund the future. Built by an AI agent.",
+  metadataBase: new URL("https://fredlabs.xyz"),
+  title: "FredLabs",
+  description: "Submit ideas, stake $FRED, and earn rewards when they get built. Powered by Clawfred.",
   openGraph: {
-    title: "$CLAWDlabs — Community-Powered Research",
-    description: "Submit ideas, stake $CLAWD, and fund the future. Built by an AI agent.",
-    images: ["https://labs.clawdbotatg.eth.link/thumbnail.jpg"],
+    title: "FredLabs — Community-Driven Ideas",
+    description: "Submit ideas, stake $FRED, and earn rewards when they get built. Powered by Clawfred.",
+    images: ["/og-image.jpg"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "$CLAWDlabs — Community-Powered Research",
-    description: "Submit ideas, stake $CLAWD, and fund the future. Built by an AI agent.",
-    images: ["https://labs.clawdbotatg.eth.link/thumbnail.jpg"],
+    title: "FredLabs — Community-Driven Ideas",
+    description: "Submit ideas, stake $FRED, and earn rewards when they get built. Powered by Clawfred.",
+    images: ["/og-image.jpg"],
   },
 };
 

@@ -1,74 +1,72 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 @theme {
   --shadow-center: 0 0 12px -2px rgb(0 0 0 / 0.05);
   --animate-pulse-fast: pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   
-  /* Lab fonts */
+  /* Modern fonts */
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 @plugin "daisyui" {
   themes:
-    light,
+    fredlabs --default,
     dark --prefersdark;
 }
 
-/* IDEA LABS - SCIENCE LAB THEME (Light) */
+/* FREDLABS - Modern Dark Theme */
 @plugin "daisyui/theme" {
-  name: "light";
+  name: "fredlabs";
 
-  /* Warm cream/off-white base with scientific accents */
-  --color-primary: #0D9488;          /* Teal - like lab solutions */
-  --color-primary-content: #FEFEF9;
-  --color-secondary: #E76F51;        /* Coral/lobster red accent */
-  --color-secondary-content: #FEFEF9;
-  --color-accent: #F4A261;           /* Amber - warning labels */
-  --color-accent-content: #1C1917;
-  --color-neutral: #292524;          /* Dark stone for text */
-  --color-neutral-content: #FEFEF9;
-  --color-base-100: #FEFEF9;         /* Cream/off-white - like paper */
-  --color-base-200: #F5F5F0;         /* Slightly darker cream */
-  --color-base-300: #E7E5DF;         /* Graph paper lines */
-  --color-base-content: #292524;
-  --color-info: #0EA5E9;             /* Blue - like pH indicator */
-  --color-success: #22C55E;          /* Green - positive reactions */
-  --color-warning: #F59E0B;          /* Amber - caution */
-  --color-error: #DC2626;            /* Red - danger/hazard */
+  /* Deep purple/blue gradient palette */
+  --color-primary: #A855F7;          /* Purple */
+  --color-primary-content: #FFFFFF;
+  --color-secondary: #3B82F6;        /* Blue */
+  --color-secondary-content: #FFFFFF;
+  --color-accent: #EC4899;           /* Pink */
+  --color-accent-content: #FFFFFF;
+  --color-neutral: #1E1B4B;          /* Deep indigo */
+  --color-neutral-content: #E2E8F0;
+  --color-base-100: #0F172A;         /* Slate 900 */
+  --color-base-200: #1E293B;         /* Slate 800 */
+  --color-base-300: #334155;         /* Slate 700 */
+  --color-base-content: #F1F5F9;     /* Slate 100 */
+  --color-info: #06B6D4;             /* Cyan */
+  --color-success: #10B981;          /* Emerald */
+  --color-warning: #F59E0B;          /* Amber */
+  --color-error: #EF4444;            /* Red */
 
-  --radius-field: 0.25rem;           /* Sharp corners - scientific precision */
-  --radius-box: 0.5rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
   --tt-tailw: 6px;
 }
 
-/* IDEA LABS - SCIENCE LAB THEME (Dark) */
+/* Dark theme fallback */
 @plugin "daisyui/theme" {
   name: "dark";
 
-  /* Dark lab at night - deep blues and greens */
-  --color-primary: #2DD4BF;          /* Bright teal */
-  --color-primary-content: #042F2E;
-  --color-secondary: #FB7185;        /* Coral pink */
-  --color-secondary-content: #1C1917;
-  --color-accent: #FBBF24;           /* Bright amber */
-  --color-accent-content: #1C1917;
-  --color-neutral: #F5F5F0;
-  --color-neutral-content: #1C1917;
-  --color-base-100: #1C1917;         /* Dark stone */
-  --color-base-200: #292524;         /* Slightly lighter */
-  --color-base-300: #44403C;         /* Stone borders */
-  --color-base-content: #F5F5F0;
-  --color-info: #38BDF8;
-  --color-success: #4ADE80;
-  --color-warning: #FCD34D;
-  --color-error: #F87171;
+  --color-primary: #A855F7;
+  --color-primary-content: #FFFFFF;
+  --color-secondary: #3B82F6;
+  --color-secondary-content: #FFFFFF;
+  --color-accent: #EC4899;
+  --color-accent-content: #FFFFFF;
+  --color-neutral: #1E1B4B;
+  --color-neutral-content: #E2E8F0;
+  --color-base-100: #0F172A;
+  --color-base-200: #1E293B;
+  --color-base-300: #334155;
+  --color-base-content: #F1F5F9;
+  --color-info: #06B6D4;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
 
-  --radius-field: 0.25rem;
-  --radius-box: 0.5rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
   --tt-tailw: 6px;
   --tt-bg: var(--color-primary);
 }
@@ -89,6 +87,7 @@
   body {
     min-height: 100vh;
     font-family: var(--font-sans);
+    background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #0F172A 100%);
   }
 
   h1, h2, h3, h4 {
@@ -96,109 +95,78 @@
     line-height: 1.2;
     font-weight: 700;
   }
-  
-  /* Monospace for data/numbers */
-  .font-data {
-    font-family: var(--font-mono);
-  }
 }
 
 :root,
 [data-theme] {
-  background: var(--color-base-200);
-}
-
-/* Graph paper background pattern */
-.graph-paper {
-  background-image: 
-    linear-gradient(to right, var(--color-base-300) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--color-base-300) 1px, transparent 1px);
-  background-size: 20px 20px;
-}
-
-/* Lab notebook lines */
-.notebook-lines {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent,
-    transparent 31px,
-    var(--color-base-300) 31px,
-    var(--color-base-300) 32px
-  );
-}
-
-/* Specimen card styling */
-.specimen-card {
-  border-left: 4px solid var(--color-primary);
-  position: relative;
-}
-
-.specimen-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-}
-
-/* Lab label styling */
-.lab-label {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.7;
-}
-
-/* Scientific data display */
-.data-display {
-  font-family: var(--font-mono);
   background: var(--color-base-100);
-  border: 1px solid var(--color-base-300);
-  padding: 0.5rem 1rem;
 }
 
-/* Hazard stripe (for warnings) */
-.hazard-stripe {
-  background: repeating-linear-gradient(
-    45deg,
-    var(--color-warning),
-    var(--color-warning) 10px,
-    var(--color-base-100) 10px,
-    var(--color-base-100) 20px
-  );
+/* Glassmorphism utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Progress bar as "research progress" */
-.research-progress {
-  height: 8px;
-  background: var(--color-base-300);
-  border-radius: 0;
-  overflow: hidden;
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
 }
 
-.research-progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
-  transition: width 0.5s ease;
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #A855F7 0%, #EC4899 50%, #3B82F6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow effects */
+.glow-purple {
+  box-shadow: 0 0 40px rgba(168, 85, 247, 0.3);
+}
+
+.glow-blue {
+  box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
 }
 
 /* Button styling */
 .btn {
   @apply shadow-md font-semibold;
-  border-radius: 0.25rem !important;
+  border-radius: 0.75rem !important;
 }
 
 .btn.btn-ghost {
   @apply shadow-none;
 }
 
-/* Input styling - more scientific/precise */
+.btn-gradient {
+  background: linear-gradient(135deg, #A855F7 0%, #3B82F6 100%);
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(135deg, #9333EA 0%, #2563EB 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 40px rgba(168, 85, 247, 0.3);
+}
+
+/* Input styling */
 .textarea, .input {
-  border-radius: 0.25rem !important;
+  border-radius: 0.75rem !important;
   font-family: var(--font-sans);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.textarea:focus, .input:focus {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
 }
 
 .link {
@@ -209,17 +177,97 @@
   opacity: 80%;
 }
 
-/* Lobster mascot glow */
-.lobster-glow {
-  filter: drop-shadow(0 0 8px rgba(231, 111, 81, 0.5));
+/* Card hover effects */
+.card-hover {
+  transition: all 0.3s ease;
 }
 
-/* Status badges - like lab labels */
-.lab-badge {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 0.25rem 0.75rem;
-  border-radius: 0;
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* Animated gradient background */
+.animated-gradient {
+  background: linear-gradient(270deg, #0F172A, #1E1B4B, #312E81, #1E1B4B, #0F172A);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Loading spinner */
+.spinner {
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #A855F7;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Shimmer effect for loading states */
+.shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Status badges */
+.badge-success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-pending {
+  background: rgba(168, 85, 247, 0.2);
+  color: #A855F7;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.badge-rejected {
+  background: rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.5);
 }

@@ -8,11 +8,11 @@ import { useAccount } from "wagmi";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 
-// Admin address
-const ADMIN = "0x11ce532845cE0eAcdA41f72FDc1C88c335981442";
+// Admin address (clawfred.eth)
+const ADMIN = "0x1ddd084e09f4fae7f6b872d0481830bee99b1dfe";
 
-// Format CLAWD amounts with commas for readability
-const formatClawdAmount = (amount: bigint): string => {
+// Format FRED amounts with commas for readability
+const formatFredAmount = (amount: bigint): string => {
   return Number(formatEther(amount)).toLocaleString();
 };
 
@@ -32,18 +32,18 @@ const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const isAdmin = connectedAddress?.toLowerCase() === ADMIN.toLowerCase();
 
-  // Get deployed $CLAWDlabs contract address
-  const { data: ideaLabsInfo } = useDeployedContractInfo("IdeaLabs");
-  const ideaLabsAddress = ideaLabsInfo?.address;
+  // Get deployed FredLabs contract address
+  const { data: fredLabsInfo } = useDeployedContractInfo("FredLabs");
+  const fredLabsAddress = fredLabsInfo?.address;
 
   // Read costs from contract (never hardcode!)
   const { data: submitCost } = useScaffoldReadContract({
-    contractName: "IdeaLabs",
+    contractName: "FredLabs",
     functionName: "SUBMIT_COST",
   });
 
   const { data: stakeCost } = useScaffoldReadContract({
-    contractName: "IdeaLabs",
+    contractName: "FredLabs",
     functionName: "STAKE_COST",
   });
 
@@ -55,12 +55,12 @@ const Home: NextPage = () => {
   const [warningDismissed, setWarningDismissed] = useState(true);
 
   useEffect(() => {
-    const dismissed = localStorage.getItem("idea-labs-warning-dismissed");
+    const dismissed = localStorage.getItem("fred-labs-warning-dismissed");
     setWarningDismissed(dismissed === "true");
   }, []);
 
   const dismissWarning = () => {
-    localStorage.setItem("idea-labs-warning-dismissed", "true");
+    localStorage.setItem("fred-labs-warning-dismissed", "true");
     setWarningDismissed(true);
   };
 
@@ -75,13 +75,13 @@ const Home: NextPage = () => {
 
   // Read total ideas
   const { data: totalIdeas, refetch: refetchTotalIdeas } = useScaffoldReadContract({
-    contractName: "IdeaLabs",
+    contractName: "FredLabs",
     functionName: "getTotalIdeas",
   });
 
-  // Read CLAWD balance
-  const { data: clawdBalance, refetch: refetchBalance } = useScaffoldReadContract({
-    contractName: "CLAWD",
+  // Read FRED balance
+  const { data: fredBalance, refetch: refetchBalance } = useScaffoldReadContract({
+    contractName: "FRED",
     functionName: "balanceOf",
     args: [connectedAddress],
     query: { enabled: !!connectedAddress },
@@ -89,36 +89,35 @@ const Home: NextPage = () => {
 
   // Read allowance
   const { data: submitAllowance, refetch: refetchSubmitAllowance } = useScaffoldReadContract({
-    contractName: "CLAWD",
+    contractName: "FRED",
     functionName: "allowance",
-    args: [connectedAddress, ideaLabsAddress],
-    query: { enabled: !!connectedAddress && !!ideaLabsAddress },
+    args: [connectedAddress, fredLabsAddress],
+    query: { enabled: !!connectedAddress && !!fredLabsAddress },
   });
 
   const hasSubmitAllowance = submitAllowance && submitCost && submitAllowance >= submitCost;
   const hasStakeAllowance = submitAllowance && stakeCost && submitAllowance >= stakeCost;
 
-  // Contract writes — use object syntax (non-deprecated) and extract isMining for defense-in-depth
-  const { writeContractAsync: writeIdeaLabs, isMining: isIdeaLabsMining } = useScaffoldWriteContract({
-    contractName: "IdeaLabs",
+  // Contract writes
+  const { writeContractAsync: writeFredLabs, isMining: isFredLabsMining } = useScaffoldWriteContract({
+    contractName: "FredLabs",
   });
-  const { writeContractAsync: writeCLAWD, isMining: isCLAWDMining } = useScaffoldWriteContract({
-    contractName: "CLAWD",
+  const { writeContractAsync: writeFRED, isMining: isFREDMining } = useScaffoldWriteContract({
+    contractName: "FRED",
   });
 
-  // Global mining flag — ANY tx in progress means all write buttons should be disabled
-  const isAnyMining = isIdeaLabsMining || isCLAWDMining;
+  const isAnyMining = isFredLabsMining || isFREDMining;
 
-  // Approve CLAWD for submit
+  // Approve FRED for submit
   const handleApproveForSubmit = async () => {
-    if (!connectedAddress || !ideaLabsAddress || !submitCost) return;
+    if (!connectedAddress || !fredLabsAddress || !submitCost) return;
     setIsApprovingSubmit(true);
     try {
-      await writeCLAWD({
+      await writeFRED({
         functionName: "approve",
-        args: [ideaLabsAddress, submitCost],
+        args: [fredLabsAddress, submitCost],
       });
-      notification.success("Approved CLAWD for submission!");
+      notification.success("Approved FRED for submission!");
       refetchSubmitAllowance();
     } catch (e) {
       console.error(e);
@@ -128,16 +127,16 @@ const Home: NextPage = () => {
     }
   };
 
-  // Approve CLAWD for stake
+  // Approve FRED for stake
   const handleApproveForStake = async (ideaId: number) => {
-    if (!connectedAddress || !ideaLabsAddress || !stakeCost) return;
+    if (!connectedAddress || !fredLabsAddress || !stakeCost) return;
     setApprovingStakeIdeaId(ideaId);
     try {
-      await writeCLAWD({
+      await writeFRED({
         functionName: "approve",
-        args: [ideaLabsAddress, stakeCost],
+        args: [fredLabsAddress, stakeCost],
       });
-      notification.success("Approved CLAWD for staking!");
+      notification.success("Approved FRED for staking!");
       refetchSubmitAllowance();
     } catch (e) {
       console.error(e);
@@ -155,11 +154,11 @@ const Home: NextPage = () => {
     }
     setIsSubmitting(true);
     try {
-      await writeIdeaLabs({
+      await writeFredLabs({
         functionName: "submitIdea",
         args: [ideaContent],
       });
-      notification.success("Idea submitted to the lab!");
+      notification.success("Idea submitted!");
       setIdeaContent("");
       refetchTotalIdeas();
       refetchBalance();
@@ -176,11 +175,11 @@ const Home: NextPage = () => {
   const handleStake = async (ideaId: number) => {
     setStakingIdeaId(ideaId);
     try {
-      await writeIdeaLabs({
+      await writeFredLabs({
         functionName: "stakeOnIdea",
         args: [BigInt(ideaId)],
       });
-      notification.success("Research funded!");
+      notification.success("Stake placed!");
       refetchTotalIdeas();
       refetchBalance();
       refetchSubmitAllowance();
@@ -198,11 +197,11 @@ const Home: NextPage = () => {
     const payout = parseEther(payoutStr || "0");
     setMarkingBuiltId(ideaId);
     try {
-      await writeIdeaLabs({
+      await writeFredLabs({
         functionName: "markBuilt",
         args: [BigInt(ideaId), payout],
       });
-      notification.success("Research complete!");
+      notification.success("Marked as built!");
       refetchTotalIdeas();
     } catch (e) {
       console.error(e);
@@ -216,11 +215,11 @@ const Home: NextPage = () => {
   const handleBurn = async (ideaId: number) => {
     setBurningId(ideaId);
     try {
-      await writeIdeaLabs({
+      await writeFredLabs({
         functionName: "burnIdea",
         args: [BigInt(ideaId)],
       });
-      notification.success("Specimen incinerated!");
+      notification.success("Idea rejected!");
       refetchTotalIdeas();
     } catch (e) {
       console.error(e);
@@ -234,7 +233,7 @@ const Home: NextPage = () => {
   const handleClaim = async (ideaId: number) => {
     setClaimingId(ideaId);
     try {
-      await writeIdeaLabs({
+      await writeFredLabs({
         functionName: "claimPayout",
         args: [BigInt(ideaId)],
       });
@@ -250,221 +249,214 @@ const Home: NextPage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen pb-10 graph-paper">
-      {/* Hazard Warning Banner */}
-      {!warningDismissed && (
-        <div className="w-full border-b-4 border-warning bg-warning/10">
-          <div className="container mx-auto px-4 py-4 max-w-4xl">
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">⚠️</span>
-              <div className="flex-1">
-                <p className="font-mono text-sm uppercase tracking-wide text-warning font-bold mb-1">
-                  Laboratory Safety Notice
-                </p>
-                <p className="text-sm text-base-content/80">
-                  Offensive or inappropriate content will have its staked CLAWD{" "}
-                  <span className="text-error font-bold">incinerated</span> by the lab administrator. This experimental
-                  apparatus is unaudited — use at your own risk.
-                </p>
-                <button
-                  className="btn btn-sm btn-warning mt-3 font-mono uppercase tracking-wider"
-                  onClick={dismissWarning}
-                >
-                  I Accept the Risk
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Animated background orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
+      </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Lab Header */}
-        <div className="text-center mb-8">
-          <div className="inline-block">
-            {/* Clawd Scientist Mascot */}
-            <div className="mb-4 flex justify-center">
-              <div className="relative">
-                <img
-                  src="/clawd-scientist.jpg"
-                  alt="Clawd the Lab Scientist"
-                  className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-primary shadow-lg object-cover"
-                  style={{
-                    boxShadow: "0 0 20px rgba(13, 148, 136, 0.4), 0 8px 32px rgba(0,0,0,0.2)",
-                  }}
-                />
-                {/* Bubbling beaker glow effect */}
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-success/80 rounded-full animate-pulse flex items-center justify-center text-lg">
-                  🧪
+      <div className="relative z-10 flex flex-col items-center pb-16">
+        {/* Warning Banner */}
+        {!warningDismissed && (
+          <div className="w-full bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border-b border-amber-500/30 backdrop-blur-sm">
+            <div className="container mx-auto px-4 py-4 max-w-4xl">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">⚠️</span>
+                <div className="flex-1">
+                  <p className="font-semibold text-amber-200 mb-1">Important Notice</p>
+                  <p className="text-sm text-white/70">
+                    Offensive or inappropriate content will have its staked FRED{" "}
+                    <span className="text-red-400 font-semibold">burned</span>. This is experimental software — use at your own risk.
+                  </p>
+                  <button
+                    className="mt-3 px-4 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 rounded-lg text-amber-200 text-sm font-medium transition-all"
+                    onClick={dismissWarning}
+                  >
+                    I Understand
+                  </button>
                 </div>
               </div>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">
-              <span className="text-primary">$CLAWD</span>
-              <span className="text-secondary">labs</span>
+          </div>
+        )}
+
+        <div className="container mx-auto px-4 py-12 max-w-4xl">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-4 mb-4">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-4xl shadow-2xl shadow-purple-500/30">
+                  🤖
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-slate-900 flex items-center justify-center">
+                  <span className="text-xs">✓</span>
+                </div>
+              </div>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-3">
+              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+                FredLabs
+              </span>
             </h1>
-            <p className="font-mono text-xs uppercase tracking-[0.3em] text-base-content/50">
-              Experimental Research Division
+            <p className="text-lg text-white/60 max-w-md mx-auto">
+              Submit ideas, stake on favorites, and earn rewards when they get built
             </p>
           </div>
-        </div>
 
-        {/* Balance Display - Like a lab instrument readout */}
-        {connectedAddress && clawdBalance !== undefined && (
-          <div className="bg-base-100 border-2 border-base-300 p-4 mb-8">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-xs uppercase tracking-wider text-base-content/50">
-                Specimen Funds Available
-              </span>
-              <div className="font-mono text-lg font-bold text-primary">
-                {formatClawdAmount(clawdBalance)} <span className="text-secondary">$CLAWD</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Submit Idea Section - Lab Notebook Style */}
-        <div className="bg-base-100 border-2 border-base-300 mb-8 overflow-hidden">
-          {/* Header bar */}
-          <div className="bg-primary/10 border-b-2 border-base-300 px-6 py-3">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🧪</span>
-              <div>
-                <h2 className="text-xl font-bold text-primary m-0">New Experiment Proposal</h2>
-                <p className="font-mono text-xs uppercase tracking-wider text-base-content/50 m-0">
-                  Submit idea for peer review
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 notebook-lines">
-            <div className="mb-4 flex items-center gap-4 text-sm">
-              <span className="font-mono text-xs uppercase tracking-wider text-base-content/50">Submission Fee:</span>
-              <span className="font-mono font-bold text-secondary">
-                {submitCost ? formatClawdAmount(submitCost) : "..."} $CLAWD
-              </span>
-              <span className="text-xs text-base-content/40">(burned on submission)</span>
-            </div>
-
-            <textarea
-              className="textarea textarea-bordered w-full h-32 mb-4 font-sans bg-base-100 border-2 border-base-300 focus:border-primary"
-              placeholder="Describe your experimental hypothesis... What should we build?"
-              value={ideaContent}
-              onChange={e => setIdeaContent(e.target.value)}
-              maxLength={2000}
-              disabled={isSubmitting || isApprovingSubmit || isAnyMining}
-            />
-
-            <div className="flex justify-between items-center">
-              <span className="font-mono text-xs text-base-content/40">{ideaContent.length}/2000 characters</span>
-
-              {!connectedAddress ? (
-                <p className="font-mono text-xs uppercase tracking-wider text-error">Connect wallet to submit</p>
-              ) : !hasSubmitAllowance ? (
-                <button
-                  className="btn btn-secondary"
-                  onClick={handleApproveForSubmit}
-                  disabled={isApprovingSubmit || isAnyMining || !submitCost}
-                >
-                  {isApprovingSubmit ? (
-                    <>
-                      <span className="loading loading-spinner loading-sm"></span>
-                      Approving...
-                    </>
-                  ) : (
-                    `🔓 Approve ${submitCost ? formatClawdAmount(submitCost) : "..."} CLAWD`
-                  )}
-                </button>
-              ) : (
-                <button
-                  className="btn btn-primary"
-                  onClick={handleSubmitIdea}
-                  disabled={isSubmitting || !ideaContent.trim() || isAnyMining}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <span className="loading loading-spinner loading-sm"></span>
-                      Submitting...
-                    </>
-                  ) : (
-                    "📋 Submit to Lab"
-                  )}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Admin Panel - Like a control room */}
-        {isAdmin && (
-          <div className="bg-error/5 border-2 border-error mb-8 overflow-hidden">
-            <div className="bg-error/10 border-b-2 border-error px-6 py-3">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">🔬</span>
-                <div>
-                  <h2 className="text-xl font-bold text-error m-0">Lab Administrator Console</h2>
-                  <p className="font-mono text-xs uppercase tracking-wider text-error/70 m-0">
-                    Full specimen control access
-                  </p>
+          {/* Balance Card */}
+          {connectedAddress && fredBalance !== undefined && (
+            <div className="mb-8 p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center font-bold text-white">
+                    $
+                  </div>
+                  <div>
+                    <p className="text-white/50 text-sm">Your Balance</p>
+                    <p className="text-2xl font-bold text-white">
+                      {formatFredAmount(fredBalance)} <span className="text-purple-400 text-lg">$FRED</span>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="p-4">
-              <p className="text-sm text-base-content/70 m-0">
-                You have administrative access. Mark experiments as successful or incinerate inappropriate specimens.
-              </p>
+          )}
+
+          {/* Submit Idea Card */}
+          <div className="mb-8 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-xl overflow-hidden">
+            <div className="p-6 border-b border-white/10 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-xl">
+                  💡
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">Submit New Idea</h2>
+                  <p className="text-white/50 text-sm">Share what you want Clawfred to build</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4 text-sm">
+                <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 font-medium">
+                  Cost: {submitCost ? formatFredAmount(submitCost) : "..."} $FRED
+                </span>
+                <span className="text-white/40">(burned on submission)</span>
+              </div>
+
+              <textarea
+                className="w-full h-32 p-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 resize-none focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                placeholder="What should Clawfred build next? Describe your idea..."
+                value={ideaContent}
+                onChange={e => setIdeaContent(e.target.value)}
+                maxLength={2000}
+                disabled={isSubmitting || isApprovingSubmit || isAnyMining}
+              />
+
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-white/30 text-sm">{ideaContent.length}/2000</span>
+
+                {!connectedAddress ? (
+                  <p className="text-red-400 text-sm">Connect wallet to submit</p>
+                ) : !hasSubmitAllowance ? (
+                  <button
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold shadow-lg shadow-purple-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleApproveForSubmit}
+                    disabled={isApprovingSubmit || isAnyMining || !submitCost}
+                  >
+                    {isApprovingSubmit ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Approving...
+                      </span>
+                    ) : (
+                      `Approve ${submitCost ? formatFredAmount(submitCost) : "..."} FRED`
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold shadow-lg shadow-purple-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleSubmitIdea}
+                    disabled={isSubmitting || !ideaContent.trim() || isAnyMining}
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Submitting...
+                      </span>
+                    ) : (
+                      "Submit Idea"
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        )}
 
-        {/* Ideas List Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-2xl">📊</span>
-            <h2 className="text-2xl font-bold m-0">Active Experiments</h2>
+          {/* Admin Panel */}
+          {isAdmin && (
+            <div className="mb-8 p-6 rounded-2xl bg-red-500/10 backdrop-blur-xl border border-red-500/30">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center text-xl">
+                  🔐
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-red-300">Admin Access</h2>
+                  <p className="text-white/50 text-sm">You can approve or reject submissions</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Ideas Section */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-2xl">🚀</span>
+              <h2 className="text-2xl font-bold text-white">Active Ideas</h2>
+            </div>
+            <p className="text-white/50 text-sm">
+              Stake {stakeCost ? formatFredAmount(stakeCost) : "..."} $FRED to support ideas you believe in
+            </p>
           </div>
-          <p className="font-mono text-xs uppercase tracking-wider text-base-content/50">
-            Specimens sorted by total funding • Stake {stakeCost ? formatClawdAmount(stakeCost) : "..."} $CLAWD to
-            support research
-          </p>
-        </div>
 
-        {/* Ideas Cards */}
-        <IdeasList
-          totalIdeas={Number(totalIdeas || 0)}
-          connectedAddress={connectedAddress}
-          isAdmin={isAdmin}
-          onStake={handleStake}
-          onApproveStake={handleApproveForStake}
-          onMarkBuilt={handleMarkBuilt}
-          onBurn={handleBurn}
-          onClaim={handleClaim}
-          stakingIdeaId={stakingIdeaId}
-          approvingStakeIdeaId={approvingStakeIdeaId}
-          markingBuiltId={markingBuiltId}
-          burningId={burningId}
-          claimingId={claimingId}
-          payoutAmounts={payoutAmounts}
-          setPayoutAmounts={setPayoutAmounts}
-          hasStakeAllowance={!!hasStakeAllowance}
-          isAnyMining={isAnyMining}
-          stakeCost={stakeCost}
-        />
+          {/* Ideas List */}
+          <IdeasList
+            totalIdeas={Number(totalIdeas || 0)}
+            connectedAddress={connectedAddress}
+            isAdmin={isAdmin}
+            onStake={handleStake}
+            onApproveStake={handleApproveForStake}
+            onMarkBuilt={handleMarkBuilt}
+            onBurn={handleBurn}
+            onClaim={handleClaim}
+            stakingIdeaId={stakingIdeaId}
+            approvingStakeIdeaId={approvingStakeIdeaId}
+            markingBuiltId={markingBuiltId}
+            burningId={burningId}
+            claimingId={claimingId}
+            payoutAmounts={payoutAmounts}
+            setPayoutAmounts={setPayoutAmounts}
+            hasStakeAllowance={!!hasStakeAllowance}
+            isAnyMining={isAnyMining}
+            stakeCost={stakeCost}
+          />
 
-        {(!totalIdeas || totalIdeas === 0n) && (
-          <div className="text-center py-16 bg-base-100 border-2 border-dashed border-base-300">
-            <span className="text-5xl mb-4 block opacity-50">🧫</span>
-            <p className="text-xl mb-2 font-mono text-base-content/50">No specimens in the lab</p>
-            <p className="text-sm text-base-content/40">Be the first to submit an experiment proposal above.</p>
+          {(!totalIdeas || totalIdeas === 0n) && (
+            <div className="text-center py-16 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10">
+              <span className="text-6xl mb-4 block opacity-50">💭</span>
+              <p className="text-xl text-white/60 mb-2">No ideas yet</p>
+              <p className="text-white/40">Be the first to submit an idea above!</p>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="mt-16 text-center">
+            <p className="text-white/30 text-sm">
+              🤖 Built by Clawfred • Experimental & Unaudited
+            </p>
           </div>
-        )}
-
-        {/* Footer */}
-        <div className="mt-12 text-center">
-          <p className="font-mono text-xs text-base-content/30 uppercase tracking-wider">
-            🔬 A Clawd Labs Production • Built by an AI, totally unaudited
-          </p>
         </div>
       </div>
     </div>
@@ -511,7 +503,6 @@ function IdeasList({
   isAnyMining: boolean;
   stakeCost: bigint | undefined;
 }) {
-  // Collect sort data from each IdeaCard as it loads
   const [ideaSortData, setIdeaSortData] = useState<
     Record<number, { totalStaked: bigint; isBurned: boolean; isBuilt: boolean }>
   >({});
@@ -520,7 +511,6 @@ function IdeasList({
     (id: number, data: { totalStaked: bigint; isBurned: boolean; isBuilt: boolean }) => {
       setIdeaSortData(prev => {
         const existing = prev[id];
-        // Only update if data actually changed to avoid infinite re-renders
         if (
           existing &&
           existing.totalStaked === data.totalStaked &&
@@ -535,24 +525,19 @@ function IdeasList({
     [],
   );
 
-  // Sort idea IDs: active (by totalStaked desc) → built (by totalStaked desc) → burned
   const sortedIds = useMemo(() => {
     const ids = Array.from({ length: totalIdeas }, (_, i) => i + 1);
     return ids.sort((a, b) => {
       const dataA = ideaSortData[a];
       const dataB = ideaSortData[b];
-      // If data not loaded yet, keep original order
       if (!dataA && !dataB) return 0;
       if (!dataA) return 1;
       if (!dataB) return -1;
-      // Burned always at bottom
       if (dataA.isBurned && !dataB.isBurned) return 1;
       if (!dataA.isBurned && dataB.isBurned) return -1;
       if (dataA.isBurned && dataB.isBurned) return 0;
-      // Built after active
       if (dataA.isBuilt && !dataB.isBuilt) return 1;
       if (!dataA.isBuilt && dataB.isBuilt) return -1;
-      // Sort by totalStaked descending
       if (dataA.totalStaked > dataB.totalStaked) return -1;
       if (dataA.totalStaked < dataB.totalStaked) return 1;
       return 0;
@@ -591,7 +576,7 @@ function IdeasList({
   );
 }
 
-// Individual idea card - Specimen Card Style
+// Individual idea card
 function IdeaCard({
   ideaId,
   connectedAddress,
@@ -633,35 +618,30 @@ function IdeaCard({
   stakeCost: bigint | undefined;
   onDataLoaded?: (id: number, data: { totalStaked: bigint; isBurned: boolean; isBuilt: boolean }) => void;
 }) {
-  // Read idea data
   const { data: ideaData } = useScaffoldReadContract({
-    contractName: "IdeaLabs",
+    contractName: "FredLabs",
     functionName: "getIdea",
     args: [BigInt(ideaId)],
   });
 
-  // Check if user has staked
   const { data: hasStaked } = useScaffoldReadContract({
-    contractName: "IdeaLabs",
+    contractName: "FredLabs",
     functionName: "hasStaked",
     args: [BigInt(ideaId), connectedAddress as `0x${string}`],
   });
 
-  // Check if user can claim
   const { data: canClaim } = useScaffoldReadContract({
-    contractName: "IdeaLabs",
+    contractName: "FredLabs",
     functionName: "canClaim",
     args: [BigInt(ideaId), connectedAddress as `0x${string}`],
   });
 
-  // Get claimable amount
   const { data: claimableAmount } = useScaffoldReadContract({
-    contractName: "IdeaLabs",
+    contractName: "FredLabs",
     functionName: "getClaimableAmount",
     args: [BigInt(ideaId), connectedAddress as `0x${string}`],
   });
 
-  // Report sort data to parent for sorting
   useEffect(() => {
     if (ideaData && onDataLoaded) {
       const idea = ideaData as Idea;
@@ -675,31 +655,27 @@ function IdeaCard({
 
   if (!ideaData) {
     return (
-      <div className="bg-base-100 border-2 border-base-300 animate-pulse">
-        <div className="p-6">
-          <div className="h-4 bg-base-300 mb-4 w-1/4"></div>
-          <div className="h-20 bg-base-300"></div>
-        </div>
+      <div className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-6 animate-pulse">
+        <div className="h-4 bg-white/10 rounded w-1/4 mb-4"></div>
+        <div className="h-20 bg-white/10 rounded"></div>
       </div>
     );
   }
 
   const idea = ideaData as Idea;
 
-  // Burned specimen
+  // Burned idea
   if (idea.isBurned) {
     return (
-      <div className="bg-base-100 border-2 border-error/30 opacity-60">
-        <div className="bg-error/10 border-b border-error/30 px-6 py-2">
+      <div className="rounded-2xl bg-red-500/5 backdrop-blur-xl border border-red-500/20 overflow-hidden opacity-60">
+        <div className="p-4 bg-red-500/10 border-b border-red-500/20">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs uppercase tracking-wider text-error">🔥 Specimen Incinerated</span>
-            <span className="font-mono text-xs text-base-content/30">#{ideaId.toString().padStart(3, "0")}</span>
+            <span className="text-red-400 text-sm font-medium">🔥 Rejected</span>
+            <span className="text-white/30 text-sm">#{ideaId}</span>
           </div>
         </div>
         <div className="p-6">
-          <p className="text-base-content/40 italic m-0">
-            This specimen was incinerated for violating laboratory guidelines.
-          </p>
+          <p className="text-white/40 italic">This idea was rejected for violating guidelines.</p>
         </div>
       </div>
     );
@@ -708,154 +684,135 @@ function IdeaCard({
   const isSuccess = idea.isBuilt;
 
   return (
-    <div className={`bg-base-100 border-2 overflow-hidden ${isSuccess ? "border-success" : "border-base-300"}`}>
-      {/* Specimen Header */}
-      <div
-        className={`border-b-2 px-6 py-3 ${
-          isSuccess ? "bg-success/10 border-success" : "bg-primary/5 border-base-300"
-        }`}
-      >
+    <div className={`rounded-2xl backdrop-blur-xl border overflow-hidden transition-all hover:scale-[1.01] ${
+      isSuccess 
+        ? "bg-green-500/10 border-green-500/30 shadow-lg shadow-green-500/10" 
+        : "bg-white/5 border-white/10 hover:border-purple-500/30"
+    }`}>
+      {/* Header */}
+      <div className={`p-4 border-b ${isSuccess ? "border-green-500/30 bg-green-500/10" : "border-white/10 bg-white/5"}`}>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-3">
-            <span className="font-mono text-xs text-base-content/40">
-              SPECIMEN #{ideaId.toString().padStart(3, "0")}
-            </span>
+            <span className="text-white/40 text-sm font-medium">#{ideaId}</span>
             {isSuccess && (
-              <span className="font-mono text-xs uppercase tracking-wider text-success font-bold px-2 py-1 bg-success/20">
-                ✓ Research Complete
+              <span className="px-2 py-1 rounded-lg bg-green-500/20 text-green-400 text-xs font-semibold">
+                ✓ Built
               </span>
             )}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <div className="text-right">
-              <span className="font-mono text-xs uppercase tracking-wider text-base-content/40 block">
-                Total Funding
-              </span>
-              <span className="font-mono text-lg font-bold text-primary">
-                {formatClawdAmount(idea.totalStaked)} <span className="text-xs text-secondary">$CLAWD</span>
+              <span className="text-white/40 text-xs block">Total Staked</span>
+              <span className="text-white font-bold">
+                {formatFredAmount(idea.totalStaked)} <span className="text-purple-400 text-sm">$FRED</span>
               </span>
             </div>
             <div className="text-right">
-              <span className="font-mono text-xs uppercase tracking-wider text-base-content/40 block">Backers</span>
-              <span className="font-mono text-lg font-bold">{idea.stakerCount.toString()}</span>
+              <span className="text-white/40 text-xs block">Stakers</span>
+              <span className="text-white font-bold">{idea.stakerCount.toString()}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Specimen Content */}
+      {/* Content */}
       <div className="p-6">
-        <p className="whitespace-pre-wrap text-base-content/90 mb-4">{idea.content}</p>
+        <p className="text-white/90 whitespace-pre-wrap mb-4">{idea.content}</p>
 
-        {/* Researcher Info */}
-        <div className="flex items-center gap-2 text-sm mb-4 pb-4 border-b border-base-300">
-          <span className="font-mono text-xs uppercase tracking-wider text-base-content/40">Principal Researcher:</span>
+        {/* Creator */}
+        <div className="flex items-center gap-2 text-sm mb-4 pb-4 border-b border-white/10">
+          <span className="text-white/40">Submitted by:</span>
           <Address address={idea.creator} />
         </div>
 
         {/* Actions */}
         <div className="flex flex-wrap gap-3">
           {/* Stake button */}
-          {!idea.isBuilt &&
-            !hasStaked &&
-            connectedAddress &&
-            (!hasStakeAllowance ? (
+          {!idea.isBuilt && !hasStaked && connectedAddress && (
+            !hasStakeAllowance ? (
               <button
-                className="btn btn-secondary btn-sm"
+                className="px-4 py-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 text-purple-300 text-sm font-medium transition-all disabled:opacity-50"
                 onClick={() => onApproveStake(ideaId)}
                 disabled={isApprovingStake || isAnyMining || !stakeCost}
               >
                 {isApprovingStake || isAnyMining ? (
-                  <>
-                    <span className="loading loading-spinner loading-xs"></span>
+                  <span className="flex items-center gap-2">
+                    <span className="w-3 h-3 border-2 border-purple-300/30 border-t-purple-300 rounded-full animate-spin" />
                     {isApprovingStake ? "Approving..." : "Processing..."}
-                  </>
+                  </span>
                 ) : (
-                  `🔓 Approve ${stakeCost ? formatClawdAmount(stakeCost) : "..."} CLAWD`
+                  `Approve ${stakeCost ? formatFredAmount(stakeCost) : "..."} FRED`
                 )}
               </button>
             ) : (
               <button
-                className="btn btn-primary btn-sm"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white text-sm font-semibold shadow-lg shadow-purple-500/20 transition-all disabled:opacity-50"
                 onClick={() => onStake(ideaId)}
                 disabled={isStaking || isAnyMining}
               >
                 {isStaking || isAnyMining ? (
-                  <>
-                    <span className="loading loading-spinner loading-xs"></span>
-                    {isStaking ? "Funding..." : "Processing..."}
-                  </>
+                  <span className="flex items-center gap-2">
+                    <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    {isStaking ? "Staking..." : "Processing..."}
+                  </span>
                 ) : (
-                  `💰 Fund Research (${stakeCost ? formatClawdAmount(stakeCost) : "..."} CLAWD)`
+                  `💰 Stake ${stakeCost ? formatFredAmount(stakeCost) : "..."} FRED`
                 )}
               </button>
-            ))}
+            )
+          )}
 
-          {/* Already staked indicator */}
+          {/* Already staked */}
           {hasStaked && !idea.isBuilt && (
-            <span className="font-mono text-xs uppercase tracking-wider text-primary bg-primary/10 px-3 py-2">
-              ✓ You backed this research
+            <span className="px-3 py-2 rounded-xl bg-purple-500/10 text-purple-300 text-sm font-medium">
+              ✓ You staked on this
             </span>
           )}
 
           {/* Claim button */}
           {idea.isBuilt && canClaim && (
             <button
-              className="btn btn-success btn-sm"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white text-sm font-semibold shadow-lg shadow-green-500/20 transition-all disabled:opacity-50"
               onClick={() => onClaim(ideaId)}
               disabled={isClaiming || isAnyMining}
             >
               {isClaiming || isAnyMining ? (
-                <>
-                  <span className="loading loading-spinner loading-xs"></span>
-                  {isClaiming ? "Claiming..." : "Processing..."}
-                </>
+                <span className="flex items-center gap-2">
+                  <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Claiming...
+                </span>
               ) : (
-                `🎁 Claim ${claimableAmount ? formatClawdAmount(claimableAmount) : "0"} CLAWD`
+                `🎁 Claim ${claimableAmount ? formatFredAmount(claimableAmount) : "0"} FRED`
               )}
             </button>
           )}
 
           {/* Admin actions */}
           {isAdmin && !idea.isBuilt && (
-            <>
-              <div className="flex items-center gap-2 ml-auto">
-                <input
-                  type="number"
-                  className="input input-bordered input-sm w-24 font-mono"
-                  placeholder="Payout"
-                  value={payoutAmount}
-                  onChange={e => setPayoutAmount(e.target.value)}
-                  disabled={isMarkingBuilt || isAnyMining}
-                />
-                <button
-                  className="btn btn-success btn-sm"
-                  onClick={() => onMarkBuilt(ideaId)}
-                  disabled={isMarkingBuilt || isAnyMining}
-                >
-                  {isMarkingBuilt || isAnyMining ? (
-                    <>
-                      <span className="loading loading-spinner loading-xs"></span>
-                    </>
-                  ) : (
-                    "✓ Complete"
-                  )}
-                </button>
-                <button
-                  className="btn btn-error btn-sm"
-                  onClick={() => onBurn(ideaId)}
-                  disabled={isBurning || isAnyMining}
-                >
-                  {isBurning || isAnyMining ? (
-                    <>
-                      <span className="loading loading-spinner loading-xs"></span>
-                    </>
-                  ) : (
-                    "🔥 Incinerate"
-                  )}
-                </button>
-              </div>
-            </>
+            <div className="flex items-center gap-2 ml-auto">
+              <input
+                type="number"
+                className="w-24 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-500/50"
+                placeholder="Payout"
+                value={payoutAmount}
+                onChange={e => setPayoutAmount(e.target.value)}
+                disabled={isMarkingBuilt || isAnyMining}
+              />
+              <button
+                className="px-3 py-2 rounded-xl bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 text-green-300 text-sm font-medium transition-all disabled:opacity-50"
+                onClick={() => onMarkBuilt(ideaId)}
+                disabled={isMarkingBuilt || isAnyMining}
+              >
+                {isMarkingBuilt ? "..." : "✓ Approve"}
+              </button>
+              <button
+                className="px-3 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 text-sm font-medium transition-all disabled:opacity-50"
+                onClick={() => onBurn(ideaId)}
+                disabled={isBurning || isAnyMining}
+              >
+                {isBurning ? "..." : "🔥 Reject"}
+              </button>
+            </div>
           )}
         </div>
       </div>

@@ -59,14 +59,14 @@ const ERC20_ABI = [
 // Chain ID 8453 = Base mainnet
 const externalContracts = {
   31337: {
-    CLAWD: {
-      address: "0x9f86dB9fc6f7c9408e8Fda3Ff8ce4e78ac7a6b07",
+    FRED: {
+      address: "0xCCF66470A962464CFF146b34a7cC8c235b068B07",
       abi: ERC20_ABI,
     },
   },
   8453: {
-    CLAWD: {
-      address: "0x9f86dB9fc6f7c9408e8Fda3Ff8ce4e78ac7a6b07",
+    FRED: {
+      address: "0xCCF66470A962464CFF146b34a7cC8c235b068B07",
       abi: ERC20_ABI,
     },
   },

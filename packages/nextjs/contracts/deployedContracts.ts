@@ -6,14 +6,14 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
   8453: {
-    IdeaLabs: {
-      address: "0xa51fe0491292fbad5caa23f674cd59c1480ec60a",
+    FredLabs: {
+      address: "0x0000000000000000000000000000000000000000", // TODO: Deploy FredLabs contract
       abi: [
         {
           type: "constructor",
           inputs: [
             {
-              name: "_clawdToken",
+              name: "_fredToken",
               type: "address",
               internalType: "address",
             },
@@ -129,7 +129,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "clawdToken",
+          name: "fredToken",
           inputs: [],
           outputs: [
             {
@@ -142,7 +142,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "depositClawdForPayouts",
+          name: "depositFredForPayouts",
           inputs: [
             {
               name: "_amount",
@@ -204,7 +204,7 @@ const deployedContracts = {
             {
               name: "",
               type: "tuple",
-              internalType: "struct IdeaLabs.Idea",
+              internalType: "struct FredLabs.Idea",
               components: [
                 {
                   name: "id",
@@ -478,7 +478,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "withdrawExcessClawd",
+          name: "withdrawExcessFred",
           inputs: [
             {
               name: "_amount",
@@ -626,18 +626,17 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 41732537,
     },
   },
   31337: {
-    IdeaLabs: {
-      address: "0x700b6a60ce7eaaea56f065753d8dcb9653dbad35",
+    FredLabs: {
+      address: "0x0000000000000000000000000000000000000000", // Local dev
       abi: [
         {
           type: "constructor",
           inputs: [
             {
-              name: "_clawdToken",
+              name: "_fredToken",
               type: "address",
               internalType: "address",
             },
@@ -753,7 +752,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "clawdToken",
+          name: "fredToken",
           inputs: [],
           outputs: [
             {
@@ -766,7 +765,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "depositClawdForPayouts",
+          name: "depositFredForPayouts",
           inputs: [
             {
               name: "_amount",
@@ -828,7 +827,7 @@ const deployedContracts = {
             {
               name: "",
               type: "tuple",
-              internalType: "struct IdeaLabs.Idea",
+              internalType: "struct FredLabs.Idea",
               components: [
                 {
                   name: "id",
@@ -1102,7 +1101,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "withdrawExcessClawd",
+          name: "withdrawExcessFred",
           inputs: [
             {
               name: "_amount",
@@ -1250,7 +1249,6 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deployedOnBlock: 1,
     },
   },
 } as const;
