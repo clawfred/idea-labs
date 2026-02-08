@@ -253,8 +253,14 @@ const Home: NextPage = () => {
       {/* Animated background orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-        <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
+        <div
+          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        />
+        <div
+          className="absolute top-1/2 right-1/3 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "2s" }}
+        />
       </div>
 
       <div className="relative z-10 flex flex-col items-center pb-16">
@@ -268,7 +274,8 @@ const Home: NextPage = () => {
                   <p className="font-semibold text-amber-200 mb-1">Important Notice</p>
                   <p className="text-sm text-white/70">
                     Offensive or inappropriate content will have its staked FRED{" "}
-                    <span className="text-red-400 font-semibold">burned</span>. This is experimental software — use at your own risk.
+                    <span className="text-red-400 font-semibold">burned</span>. This is experimental software — use at
+                    your own risk.
                   </p>
                   <button
                     className="mt-3 px-4 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/50 rounded-lg text-amber-200 text-sm font-medium transition-all"
@@ -399,9 +406,7 @@ const Home: NextPage = () => {
           {isAdmin && (
             <div className="mb-8 p-6 rounded-2xl bg-red-500/10 backdrop-blur-xl border border-red-500/30">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center text-xl">
-                  🔐
-                </div>
+                <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center text-xl">🔐</div>
                 <div>
                   <h2 className="text-lg font-bold text-red-300">Admin Access</h2>
                   <p className="text-white/50 text-sm">You can approve or reject submissions</p>
@@ -453,9 +458,7 @@ const Home: NextPage = () => {
 
           {/* Footer */}
           <div className="mt-16 text-center">
-            <p className="text-white/30 text-sm">
-              🤖 Built by Clawfred • Experimental & Unaudited
-            </p>
+            <p className="text-white/30 text-sm">🤖 Built by Clawfred • Experimental & Unaudited</p>
           </div>
         </div>
       </div>
@@ -684,20 +687,22 @@ function IdeaCard({
   const isSuccess = idea.isBuilt;
 
   return (
-    <div className={`rounded-2xl backdrop-blur-xl border overflow-hidden transition-all hover:scale-[1.01] ${
-      isSuccess 
-        ? "bg-green-500/10 border-green-500/30 shadow-lg shadow-green-500/10" 
-        : "bg-white/5 border-white/10 hover:border-purple-500/30"
-    }`}>
+    <div
+      className={`rounded-2xl backdrop-blur-xl border overflow-hidden transition-all hover:scale-[1.01] ${
+        isSuccess
+          ? "bg-green-500/10 border-green-500/30 shadow-lg shadow-green-500/10"
+          : "bg-white/5 border-white/10 hover:border-purple-500/30"
+      }`}
+    >
       {/* Header */}
-      <div className={`p-4 border-b ${isSuccess ? "border-green-500/30 bg-green-500/10" : "border-white/10 bg-white/5"}`}>
+      <div
+        className={`p-4 border-b ${isSuccess ? "border-green-500/30 bg-green-500/10" : "border-white/10 bg-white/5"}`}
+      >
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-3">
             <span className="text-white/40 text-sm font-medium">#{ideaId}</span>
             {isSuccess && (
-              <span className="px-2 py-1 rounded-lg bg-green-500/20 text-green-400 text-xs font-semibold">
-                ✓ Built
-              </span>
+              <span className="px-2 py-1 rounded-lg bg-green-500/20 text-green-400 text-xs font-semibold">✓ Built</span>
             )}
           </div>
           <div className="flex items-center gap-6">
@@ -728,8 +733,10 @@ function IdeaCard({
         {/* Actions */}
         <div className="flex flex-wrap gap-3">
           {/* Stake button */}
-          {!idea.isBuilt && !hasStaked && connectedAddress && (
-            !hasStakeAllowance ? (
+          {!idea.isBuilt &&
+            !hasStaked &&
+            connectedAddress &&
+            (!hasStakeAllowance ? (
               <button
                 className="px-4 py-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 text-purple-300 text-sm font-medium transition-all disabled:opacity-50"
                 onClick={() => onApproveStake(ideaId)}
@@ -759,8 +766,7 @@ function IdeaCard({
                   `💰 Stake ${stakeCost ? formatFredAmount(stakeCost) : "..."} FRED`
                 )}
               </button>
-            )
-          )}
+            ))}
 
           {/* Already staked */}
           {hasStaked && !idea.isBuilt && (

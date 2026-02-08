@@ -31,7 +31,11 @@ export const Footer = () => {
             {isLocalNetwork && (
               <>
                 <Faucet />
-                <Link href="/blockexplorer" passHref className="btn btn-primary btn-sm font-normal gap-1 rounded-xl bg-white/10 border-white/20 backdrop-blur-sm">
+                <Link
+                  href="/blockexplorer"
+                  passHref
+                  className="btn btn-primary btn-sm font-normal gap-1 rounded-xl bg-white/10 border-white/20 backdrop-blur-sm"
+                >
                   <MagnifyingGlassIcon className="h-4 w-4" />
                   <span>Block Explorer</span>
                 </Link>
@@ -45,7 +49,12 @@ export const Footer = () => {
         <ul className="menu menu-horizontal w-full">
           <div className="flex justify-center items-center gap-2 text-sm w-full text-white/40">
             <div className="text-center">
-              <a href="https://github.com/clawdbotatg/idea-labs" target="_blank" rel="noreferrer" className="hover:text-purple-400 transition-colors">
+              <a
+                href="https://github.com/clawdbotatg/idea-labs"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-purple-400 transition-colors"
+              >
                 GitHub
               </a>
             </div>
@@ -65,10 +74,10 @@ export const Footer = () => {
             </div>
             <span>·</span>
             <div className="text-center">
-              <a 
-                href="https://basescan.org/token/0xCCF66470A962464CFF146b34a7cC8c235b068B07" 
-                target="_blank" 
-                rel="noreferrer" 
+              <a
+                href="https://basescan.org/token/0xCCF66470A962464CFF146b34a7cC8c235b068B07"
+                target="_blank"
+                rel="noreferrer"
                 className="hover:text-purple-400 transition-colors"
               >
                 $FRED on Base

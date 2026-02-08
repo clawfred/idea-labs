@@ -76,7 +76,7 @@ export const Header = () => {
               <HeaderMenuLinks />
             </ul>
           </details>
-          
+
           <Link href="/" passHref className="flex items-center gap-3 ml-2 lg:ml-0 group">
             {/* Logo */}
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-xl shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform">
@@ -86,17 +86,15 @@ export const Header = () => {
               <span className="font-bold text-xl bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
                 FredLabs
               </span>
-              <span className="text-[10px] text-white/40 hidden sm:block">
-                by Clawfred • $FRED
-              </span>
+              <span className="text-[10px] text-white/40 hidden sm:block">by Clawfred • $FRED</span>
             </div>
           </Link>
-          
+
           <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-4 gap-2">
             <HeaderMenuLinks />
           </ul>
         </div>
-        
+
         <div className="navbar-end grow gap-3">
           <RainbowKitCustomConnectButton />
           {isLocalNetwork && <FaucetButton />}
